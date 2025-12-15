@@ -1,0 +1,271 @@
+mixed-port: 7890
+allow-lan: false
+bind-address: 0.0.0.0
+mode: rule
+log-level: silent
+ipv6: true
+unified-delay: true
+geo-update-interval: 24 
+
+
+
+dns:
+  enable: true
+  ipv6: true
+  enhanced-mode: fake-ip
+  fake-ip-filter:
+    - 'rule-set:ntp'
+    - "geosite:connectivity-check"
+    - "geosite:private"
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+  nameserver-policy:
+    '+.edu.cn': system
+    'geosite:connectivity-check': system
+    'geosite:private': system
+    'rule-set:ntp': system
+
+
+proxy-providers:
+  airport:
+    type: http
+    url: "subscription_url"
+    interval: 10800
+    path: ./proxy_providers/airport.yaml
+    health-check:
+      enable: false
+    header:
+     User-Agent:
+      - "Clash-Verge/v2.4.3"
+
+proxy-groups:
+  - name: 泛用代理
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Google.png
+    type: select
+    proxies:
+      - 香港节点
+      - 台湾节点
+      - 狮城节点
+      - 日本节点
+      - 美国节点
+      - 其他节点
+      - DIRECT
+
+  - name: 电报消息
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Telegram.png
+    type: select
+    proxies:
+      - 狮城节点
+      - 香港节点
+      - 台湾节点
+      - 日本节点
+      - 美国节点
+      - 其他节点
+      - DIRECT
+
+  - name: AI平台
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/ChatGPT.png
+    type: select
+    use:
+      - airport
+    filter: "(新加坡|坡|狮城|SG|Singapore|美|US|GPT|Gemini)"
+
+  - name: 油管视频
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Youtube.png
+    type: select
+    proxies:
+      - 美国节点
+      - 狮城节点
+      - 香港节点
+      - 台湾节点
+      - 日本节点
+      - 其他节点
+      - DIRECT
+
+  - name: 哔哩哔哩
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Bilibili.png
+    type: select
+    proxies:
+      - DIRECT
+      - 香港节点
+      - 台湾节点
+
+  - name: 全球学术
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Scholar.png
+    type: select
+    proxies:
+      - DIRECT
+      - 狮城节点
+      - 香港节点
+      - 台湾节点
+      - 日本节点
+      - 美国节点
+      - 其他节点
+
+  - name: 广告拦截
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/AdGuard.png
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+
+  - name: 漏网之鱼
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Twitter.png
+    type: select
+    proxies:
+      - 香港节点
+      - 台湾节点
+      - 狮城节点
+      - 日本节点
+      - 美国节点
+      - 其他节点
+      - DIRECT
+
+  - name: 香港节点
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/HK.png
+    type: url-test
+    use:
+      - airport
+    filter: "(港|HK|hk|Hong Kong|HongKong|hongkong)"
+    url: https://cp.cloudflare.com/generate_204
+    interval: 600
+    tolerance: 30
+
+  - name: 日本节点
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/JP.png
+    type: select
+    use:
+      - airport
+    filter: "(日本|川日|东京|大阪|泉日|埼玉|沪日|深日|JP|Japan)"
+
+  - name: 美国节点
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/US.png
+    type: url-test
+    use:
+      - airport
+    filter: "(美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|US|United States)"
+    url: https://cp.cloudflare.com/generate_204
+    interval: 600
+    tolerance: 70
+
+  - name: 台湾节点
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/CN.png
+    type: select
+    use:
+      - airport
+    filter: "(台|新北|彰化|TW|Taiwan)"
+
+  - name: 狮城节点
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/SG.png
+    type: url-test
+    use:
+      - airport
+    filter: "(新加坡|坡|狮城|SG|Singapore)"
+    url: https://cp.cloudflare.com/generate_204
+    interval: 600
+    tolerance: 30
+
+  - name: 其他节点
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/UN.png
+    type: select
+    use:
+      - airport
+    filter: "^(?!.*(港|HK|hk|Hong Kong|HongKong|hongkong|日本|川日|东京|大阪|泉日|埼玉|沪日|深日|JP|Japan|美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|US|United States|台|新北|彰化|TW|Taiwan|新加坡|坡|狮城|SG|Singapore)).*"
+
+rule-providers:
+  banad:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/AWAvenue-Ads-Rule-Clash.mrs"
+    path: ./rule_providers/banad.mrs
+    interval: 86400
+  proxy:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/proxy.mrs"
+    path: ./rule_providers/proxy.mrs
+    interval: 86400
+  direct:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/direct.mrs"
+    path: ./rule_providers/direct.mrs
+    interval: 86400
+  googlecn:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/google.mrs"
+    path: ./rule_providers/googlecn.mrs
+    interval: 86400
+  scholar:
+    type: http
+    behavior: classical
+    url: "https://gcore.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Providers/Ruleset/Scholar.yaml"
+    path: ./rule_providers/scholar.yaml
+    interval: 86400
+  youtube:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/youtube.mrs"
+    path: ./rule_providers/youtube.mrs
+    interval: 86400
+  telegram:
+    type: http
+    behavior: classical
+    url: "https://gcore.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Providers/Ruleset/Telegram.yaml"
+    path: ./rule_providers/telegram.yaml
+    interval: 86400
+  ai:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/AI.mrs"
+    path: ./rule_providers/ai.mrs
+    interval: 86400
+  sogouinput:
+    type: http
+    behavior: classical
+    format: text
+    url: "https://gcore.jsdelivr.net/gh/SukkaLab/ruleset.skk.moe@refs/heads/master/Clash/non_ip/sogouinput.txt"
+    path: ./rule_providers/sogouinput.yaml
+    interval: 86400
+  ntp:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/ntp.mrs"
+    path: ./rule_providers/ntp.mrs
+    interval: 86400
+  bilibili:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/DustinWin/ruleset_geodata@refs/heads/mihomo-ruleset/bilibili.mrs"
+    path: ./rule_providers/bilibili.mrs
+    interval: 86400
+
+
+rules:
+  - GEOSITE,connectivity-check,DIRECT
+  - GEOSITE,private,DIRECT
+  - RULE-SET,ntp,DIRECT
+  - RULE-SET,banad, 广告拦截
+  - RULE-SET,sogouinput,REJECT
+  - RULE-SET,scholar, 全球学术
+  - RULE-SET,youtube, 油管视频
+  - RULE-SET,bilibili, 哔哩哔哩
+  - RULE-SET,telegram, 电报消息
+  - RULE-SET,ai, AI平台
+  - RULE-SET,proxy, 泛用代理
+  - RULE-SET,googlecn, 泛用代理
+  - RULE-SET,direct,DIRECT
+  - MATCH, 漏网之鱼
