@@ -1,0 +1,121 @@
+payload:
+  # --- 大型综合商业出版商 (Commercial Publishers) ---
+  # Elsevier (爱思唯尔)
+  - +.els-cdn.com
+  - +.elsevier.com
+  - +.sciencedirect.com
+  - +.scopus.com
+  - +.cell.com
+
+  # Springer Nature (施普林格·自然)
+  - +.nature.com
+  - +.springer.com
+  - +.springerlink.com
+
+  # Wiley (威立)
+  - +.wiley.com
+  - +.blackwell-synergy.com
+
+  # Taylor & Francis / Sage / Emerald
+  - +.tandfonline.com
+  - +.sagepub.com
+  - +.emerald.com
+
+  # --- 大学出版社与学术机构 (University Presses & Societies) ---
+  # Oxford University Press (牛津大学出版社)
+  - +.oup.com
+  - +.oxfordartonline.com
+  - +.oxfordbibliographies.com
+  - +.oxfordmusiconline.com
+
+  # 其他名校与研究门户
+  - +.cambridge.org
+  - +.jhu.edu
+  - +.uni-bielefeld.de
+  - +.projecteuclid.org
+
+  # --- 专业学术协会 (Societies & Associations) ---
+  # 工程、计算机与标准 (IEEE, ACM, ASTM等)
+  - +.ieee.org
+  - +.acm.org
+  - +.ascelibrary.org
+  - +.asme.org
+  - +.astm.org
+  - +.icevirtuallibrary.com
+  - +.spiedigitallibrary.org
+  - +.aiaa.org
+
+  # 物理、化学、生物与数学 (ACS, APS, RSC等)
+  - +.acs.org
+  - +.cas.org
+  - +.rsc.org
+  - +.aip.org
+  - +.scitation.org
+  - +.aps.org
+  - +.iop.org
+  - +.osapublishing.org
+  - +.ams.org
+  - +.siam.org
+  - +.asm.org
+  - +.pnas.org
+  - +.royalsocietypublishing.org
+
+  # --- 医学与生命科学 (Medical & Life Sciences) ---
+  - +.ncbi.nlm.nih.gov
+  - +.jamanetwork.com
+  - +.bmj.com
+  - +.jbc.org
+  - +.karger.com
+  - +.ovid.com
+  - +.elifesciences.org
+
+  # --- 中文学术数据库 (Chinese Academic Databases) ---
+  - +.cnki.net
+  - +.wanfangdata.com
+  - +.cqvip.com
+  - +.pkulaw.com
+  - +.westlawchina.com
+
+  # --- 科研工具、检索系统与图书馆服务 (Research Tools) ---
+  # Clarivate & Web of Science
+  - +.clarivate.com
+  - +.webofknowledge.com
+  - +.webofscience.com
+  - +.endnote.com
+
+  # 文献检索与管理
+  - +.proquest.com
+  - +.ebscohost.com
+  - +.engineeringvillage.com
+  - +.zotero.org
+  - +.readcube.com
+  - +.libguides.com
+  - +.myilibrary.com
+  - +.jstor.org
+  - +.westlaw.com
+  - +.cabdirect.org
+  - +.dimensions.ai
+  - +.academic.microsoft.com
+
+  # --- 国际组织与科研机构 (International Organizations) ---
+  - +.un.org
+  - +.imf.org
+  - +.worldbank.org
+  - +.oecd-ilibrary.org
+  - +.mpg.de
+  - +.csiro.au
+
+  # --- 开放获取与学术社区 (OA & Communities) ---
+  - +.mdpi.com
+  - +.annualreviews.org
+  - +.worldscientific.com
+  - +.researchgate.net
+  - +.semanticscholar.org
+  - +.science.org
+  - +.sciencemag.org
+  - +.crossref.org
+  - +.doi.org
+  - +.arxiv.org
+  - +.biorxiv.org
+  - +.medrxiv.org
+  - +.zenodo.org

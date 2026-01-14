@@ -1,0 +1,245 @@
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: silent
+ipv6: true
+unified-delay: true
+profile:
+  store-selected: true
+
+
+
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-filter:
+    - 'rule-set:fakeip-filter'
+  default-nameserver:
+    - 223.5.5.5
+    - 114.114.114.114
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+  nameserver-policy:
+    'rule-set:private-domain': system
+    'rule-set:connectivity-check': system    
+    '+.edu.cn': system
+
+
+proxy-providers:
+  Zeus:
+    type: http
+    url: "subscription_url"
+    interval: 10800
+    path: ./proxy_providers/Zeus.yaml
+    health-check:
+      enable: true
+      interval: 600
+      url: https://cp.cloudflare.com/generate_204
+      lazy: true
+    header:
+     User-Agent:
+      - "Clash-Verge/v2.4.4"
+
+proxy-groups:
+  - name: 泛用代理
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Google.png
+    type: select
+    proxies:
+      - 香港节点
+      - 狮城节点
+      - 全部节点
+
+  - name: 电报消息
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Telegram.png
+    type: select
+    proxies:
+      - 狮城节点
+      - 香港节点
+      - 全部节点
+
+  - name: AI平台
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/ChatGPT.png
+    type: select
+    use:
+      - Zeus
+    filter: "(新加坡|坡|狮城|獅城|SG|Singapore|美|US|GPT|Gemini)"
+
+
+  - name: 油管视频
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Youtube.png
+    type: select
+    proxies:
+      - 狮城节点
+      - 香港节点
+      - 全部节点
+
+  - name: Final
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Final.png
+    type: select
+    proxies:
+      - 香港节点
+      - 狮城节点
+      - 全部节点
+      - DIRECT
+
+  - name: 香港节点
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/HK.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)港|HK|Hong|Kong"
+
+  - name: 狮城节点
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/SG.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)新加坡|新加坡|坡|狮城|獅城|SG|Singapore"
+
+  - name: 全部节点
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Airport.png
+    type: select
+    use:
+      - Zeus
+
+
+rule-providers:
+  banad:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/AWAvenue-Ads-Rule-Clash.mrs"
+    path: ./rule_providers/banad.mrs
+    interval: 86400
+  proxy:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/proxy.mrs"
+    path: ./rule_providers/proxy.mrs
+    interval: 86400
+  cn-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/direct.mrs"
+    path: ./rule_providers/cn-domain.mrs
+    interval: 86400
+  cn-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs"
+    path: ./rule_providers/cn-ip.mrs
+    interval: 86400
+  direct-extra:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/Direct-Extra.mrs"
+    path: ./rule_providers/direct-extra.mrs
+    interval: 86400    
+  google@cn:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/google.mrs"
+    path: ./rule_providers/google@cn.mrs
+    interval: 86400
+  youtube:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/youtube.mrs"
+    path: ./rule_providers/youtube.mrs
+    interval: 86400
+  telegram-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/telegram.mrs"
+    path: ./rule_providers/telegram-domain.mrs
+    interval: 86400
+  telegram-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/telegram.mrs"
+    path: ./rule_providers/telegram-ip.mrs
+    interval: 86400
+  ai:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/AI.mrs"
+    path: ./rule_providers/ai.mrs
+    interval: 86400
+  games-download:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-game-platforms-download.mrs"
+    path: ./rule_providers/games-download.mrs
+    interval: 86400
+  private-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/private.mrs"
+    path: ./rule_providers/private-domain.mrs
+    interval: 86400
+  private-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/private.mrs"
+    path: ./rule_providers/private-ip.mrs
+    interval: 86400
+  apple-update:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple-update.mrs"
+    path: ./rule_providers/apple-update.mrs
+    interval: 86400
+  win-update:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/win-update.mrs"
+    path: ./rule_providers/win-update.mrs
+    interval: 86400
+  fakeip-filter:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/DustinWin/ruleset_geodata@mihomo-ruleset/fakeip-filter.mrs"
+    path: ./rule_providers/fakeip-filter.mrs
+    interval: 86400
+  connectivity-check:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/connectivity-check.mrs"
+    path: ./rule_providers/connectivity-check.mrs
+    interval: 86400  
+rules:
+  - RULE-SET,direct-extra,DIRECT
+  - RULE-SET,connectivity-check,DIRECT
+  - RULE-SET,private-domain,DIRECT
+  - RULE-SET,private-ip,DIRECT, no-resolve
+  - RULE-SET,games-download,DIRECT
+  - RULE-SET,apple-update,DIRECT
+  - RULE-SET,win-update,DIRECT  
+  - RULE-SET,banad, REJECT
+  - RULE-SET,youtube, 油管视频
+  - RULE-SET,ai, AI平台
+  - RULE-SET,telegram-domain, 电报消息
+  - RULE-SET,telegram-ip, 电报消息, no-resolve
+  - RULE-SET,google@cn, 泛用代理
+  - RULE-SET,proxy, 泛用代理
+  - RULE-SET,cn-domain,DIRECT
+  - RULE-SET,cn-ip,DIRECT, no-resolve
+  - MATCH, Final
