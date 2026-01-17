@@ -1,0 +1,105 @@
+payload:
+  # --- 中国大陆公共 NTP 服务 (Mainland China Public Services) ---
+  # 国家授时中心 & 公益组织
+  - ntp.ntsc.ac.cn
+  - cn.ntp.org.cn
+  - edu.ntp.org.cn
+  - cn.pool.ntp.org
+  - 0.cn.pool.ntp.org
+  - 1.cn.pool.ntp.org
+  - 2.cn.pool.ntp.org
+  - 3.cn.pool.ntp.org
+
+  # 阿里云 (Aliyun)
+  - ntp1.aliyun.com
+  - ntp2.aliyun.com
+  - ntp3.aliyun.com
+  - ntp4.aliyun.com
+  - ntp5.aliyun.com
+  - ntp6.aliyun.com
+  - ntp7.aliyun.com
+
+  # 腾讯云 (Tencent)
+  - ntp.tencent.com
+  - ntp1.tencent.com
+  - ntp2.tencent.com
+  - ntp3.tencent.com
+  - ntp4.tencent.com
+  - ntp5.tencent.com
+
+  # 教育网/大学 (Education Network)
+  - ntp.sjtu.edu.cn
+  - ntp.neu.edu.cn
+  - ntp.bupt.edu.cn
+  - ntp.shu.edu.cn
+  - ntp.tuna.tsinghua.edu.cn
+
+  # --- 港澳台地区服务 (Hong Kong & Taiwan) ---
+  - hk.ntp.org.cn
+  - stdtime.gov.hk
+  - tw.ntp.org.cn
+  - tock.stdtime.gov.tw
+  - watch.stdtime.gov.tw
+  - time.stdtime.gov.tw
+  - clock.stdtime.gov.tw
+  - tick.stdtime.gov.tw
+
+  # --- 全球顶级科技公司服务 (Global IT Giants) ---
+  # Google
+  - time.google.com
+  - time1.google.com
+  - time2.google.com
+  - time3.google.com
+  - time4.google.com
+
+  # Apple
+  - time.apple.com
+  - time1.apple.com
+  - time2.apple.com
+  - time3.apple.com
+  - time4.apple.com
+  - time5.apple.com
+  - time6.apple.com
+  - time7.apple.com
+
+  # Microsoft & Cloudflare
+  - time.windows.com
+  - time.cloudflare.com
+
+  # --- 国际组织与科研机构 (Global Organizations) ---
+  # NIST (美国国家标准与技术研究院)
+  - time.nist.gov
+  - time-nw.nist.gov
+  - time-a.nist.gov
+  - time-b.nist.gov
+  
+  # NTT (日本电信)
+  - time.gin.ntt.net
+
+  # --- NTP Pool 项目 (分区域全球池) ---
+  - pool.ntp.org
+  - asia.pool.ntp.org
+  - europe.pool.ntp.org
+  - north-america.pool.ntp.org
+  - oceania.pool.ntp.org
+  - south-america.pool.ntp.org
+  - africa.pool.ntp.org
+  - antarctica.pool.ntp.org
+
+  # --- 境外特定国家/地区 (Other Countries/Regions) ---
+  # 新加坡 (Singapore)
+  - sgp.ntp.org.cn
+  - sg.pool.ntp.org
+  # 韩国 (Korea)
+  - kr.ntp.org.cn
+  - kr.pool.ntp.org
+  # 日本 (Japan)
+  - jp.ntp.org.cn
+  - jp.pool.ntp.org
+  # 德国 (Germany)
+  - de.ntp.org.cn
+  # 印度尼西亚 (Indonesia)
+  - ina.ntp.org.cn
+  - id.pool.ntp.org
+  # 美国 (USA)
+  - us.ntp.org.cn
