@@ -1,0 +1,10 @@
+https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.yaml
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/proxy.txt
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/direct.txt
+https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt
+https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/ntp.yaml
+https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/AI.yaml
+https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/scholar.yaml
+https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/direct-extra.yaml
+https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/fakeip-filter.yaml
+https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/proxy-extra.yaml
