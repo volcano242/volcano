@@ -1,0 +1,81 @@
+name: Convert Yaml to MRS
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 13 * * *'
+
+jobs:
+  convert:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download Mihomo converter
+      run: curl -L -o mihomo.exe https://github.com/volcano242/volcano/releases/download/mihomo/mihomo.exe
+
+    - name: Process rule files
+      run: |
+        Remove-Item -Recurse -Force yaml, mrs -ErrorAction SilentlyContinue
+        mkdir yaml, mrs
+        if (-not (Test-Path -Path "input.txt")) {
+          echo "input.txt not found!"
+          exit 1
+        }
+        Get-Content input.txt | ForEach-Object {
+          $url = $_.Trim()
+          if ($url) {
+            $baseNameWithExt = $url.Split('/')[-1]
+            $prefix = $baseNameWithExt.Split('.')[0]
+            $yamlFile = "$prefix.yaml"
+            $mrsFile = "$prefix.mrs"
+            curl -L -o $yamlFile $url
+            ./mihomo.exe convert-ruleset domain yaml $yamlFile $mrsFile
+            Move-Item -Path $yamlFile -Destination "yaml/"
+            Move-Item -Path $mrsFile -Destination "mrs/"
+          }
+        }
+
+    - name: Force push to rules-output branch
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global core.autocrlf false
+
+        git checkout --orphan temp-branch
+        git rm -rf .
+        git add yaml mrs -f
+
+        $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss 'UTC'")
+        git commit -m "Scheduled rules update ($timestamp)"
+
+        git branch -M temp-branch rules-output
+        git push -f origin rules-output
+      shell: pwsh
+
+    - name: Purge jsDelivr cache
+      run: |
+        $user = "volcano242"
+        $repo = "volcano"
+        $branch = "rules-output"
+        $folders = @("yaml", "mrs")
+
+        foreach ($folder in $folders) {
+            if (Test-Path $folder) {
+                Get-ChildItem -Path $folder | ForEach-Object {
+                    $file = $_.Name
+                    $purgeUrl = "https://purge.jsdelivr.net/gh/$($user)/$($repo)@$($branch)/$($folder)/$($file)"
+                    Write-Host "Purging: $purgeUrl"
+                    try {
+                        Invoke-WebRequest -Uri $purgeUrl -Method Get -UseBasicParsing | Out-Null
+                    } catch {
+                        Write-Host "Failed to purge $file"
+                    }
+                }
+            }
+        }
+      shell: pwsh

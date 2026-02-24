@@ -1,0 +1,285 @@
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: silent
+ipv6: false
+unified-delay: true
+external-controller: 127.0.0.1:9090
+secret: "controller_secret"
+external-ui: Zashboard
+external-ui-url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@main/zashboard.zip"
+profile:
+  store-selected: true
+
+
+
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+    - 'rule-set:fakeip-filter'
+  default-nameserver:
+    - 223.5.5.5
+    - 114.114.114.114
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+  nameserver-policy:
+    'rule-set:private-domain': system
+    'rule-set:connectivity-check': system
+    '+.edu.cn': system  
+
+
+tun:
+  enable: false
+  stack: mixed
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: true
+  device: "TUN"
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+
+proxy-providers:
+  Zeus:
+    type: http
+    url: "subscription_url"
+    interval: 10800
+    path: ./proxy_providers/Zeus.yaml
+    health-check:
+      enable: true
+      interval: 600
+      url: https://cp.cloudflare.com/generate_204
+      lazy: false
+    proxy: DIRECT
+    exclude-filter: "(?i)剩余|重置|套餐|流量|到期|有效期|官网|官址|网址|过期|Expire|Expiry|Traffic|Usage|Quota|Reset|Balance|Info|通知|公告|说明"
+    header:
+      User-Agent:
+        - "Clash-Verge/v2.4.4"
+
+proxy-groups:
+  - name: Proxies
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Google.png
+    type: select
+    proxies:
+      - HK
+      - SG
+      - JP
+      - Other
+
+  - name: Telegram
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Telegram.png
+    type: select
+    proxies:
+      - SG
+      - HK
+      - JP
+      - Other
+
+  - name: AI Service
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/ChatGPT.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)^(?!.*(港|HK|Hong|Kong|澳|Macau|🇭🇰)).*"
+
+
+  - name: Youtube
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Youtube.png
+    type: select
+    proxies:
+      - HK    
+      - SG
+      - JP
+      - Other
+
+  - name: Final
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Final.png
+    type: select
+    proxies:
+      - HK
+      - SG
+      - JP
+      - Other
+      - DIRECT
+
+  - name: HK
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/HK.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)港|HK|Hong|Kong|🇭🇰"
+
+  - name: SG
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/SG.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)坡|狮城|獅城|SG|Singapore|🇸🇬"
+
+  - name: JP
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/JP.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)日本|JP|Japan|🇯🇵"   
+
+  - name: Other
+    icon: https://gcore.jsdelivr.net/gh/volcano242/volcano@main/Icons/Airport.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)^(?!.*(港|HK|Hong|Kong|🇭🇰|坡|狮城|獅城|SG|Singapore|🇸🇬|日本|JP|Japan|🇯🇵)).*"
+
+
+
+rule-providers:
+  banad:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/AWAvenue-Ads-Rule-Clash.mrs"
+    path: ./rule_providers/banad.mrs
+    interval: 86400
+  proxy:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/proxy.mrs"
+    path: ./rule_providers/proxy.mrs
+    interval: 86400
+  cn-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/direct.mrs"
+    path: ./rule_providers/cn-domain.mrs
+    interval: 86400
+  cn-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs"
+    path: ./rule_providers/cn-ip.mrs
+    interval: 86400
+  direct-extra:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/direct-extra.mrs"
+    path: ./rule_providers/direct-extra.mrs
+    interval: 86400    
+  proxy-extra:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/proxy-extra.mrs"
+    path: ./rule_providers/proxy-extra.mrs
+    interval: 86400 
+  google@cn:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/google.mrs"
+    path: ./rule_providers/google@cn.mrs
+    interval: 86400
+  youtube:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/youtube.mrs"
+    path: ./rule_providers/youtube.mrs
+    interval: 86400
+  telegram-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/telegram.mrs"
+    path: ./rule_providers/telegram-domain.mrs
+    interval: 86400
+  telegram-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/telegram.mrs"
+    path: ./rule_providers/telegram-ip.mrs
+    interval: 86400
+  ai:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-!cn.mrs"
+    path: ./rule_providers/ai.mrs
+    interval: 86400
+  games-download:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-game-platforms-download.mrs"
+    path: ./rule_providers/games-download.mrs
+    interval: 86400
+  private-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/private.mrs"
+    path: ./rule_providers/private-domain.mrs
+    interval: 86400
+  private-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/private.mrs"
+    path: ./rule_providers/private-ip.mrs
+    interval: 86400
+  apple-update:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple-update.mrs"
+    path: ./rule_providers/apple-update.mrs
+    interval: 86400
+  win-update:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/win-update.mrs"
+    path: ./rule_providers/win-update.mrs
+    interval: 86400
+  fakeip-filter:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/volcano242/volcano@rules-output/mrs/fakeip-filter.mrs"
+    path: ./rule_providers/fakeip-filter.mrs
+    interval: 86400
+  connectivity-check:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gcore.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/connectivity-check.mrs"
+    path: ./rule_providers/connectivity-check.mrs
+    interval: 86400  
+rules:
+  - RULE-SET,direct-extra,DIRECT
+  - RULE-SET,proxy-extra, Proxies
+  - RULE-SET,connectivity-check,DIRECT
+  - RULE-SET,private-domain,DIRECT
+  - RULE-SET,private-ip,DIRECT, no-resolve
+  - RULE-SET,games-download,DIRECT
+  - RULE-SET,apple-update,DIRECT
+  - RULE-SET,win-update,DIRECT  
+  - RULE-SET,banad, REJECT
+  - RULE-SET,youtube, Youtube
+  - RULE-SET,ai, AI Service
+  - RULE-SET,telegram-domain, Telegram
+  - RULE-SET,telegram-ip, Telegram, no-resolve
+  - RULE-SET,google@cn, Proxies
+  - RULE-SET,proxy, Proxies
+  - RULE-SET,cn-domain,DIRECT
+  - RULE-SET,cn-ip,DIRECT, no-resolve
+  - MATCH, Final

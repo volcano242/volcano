@@ -1,0 +1,11 @@
+Set shell = CreateObject("Shell.Application")
+Set fso = CreateObject("Scripting.FileSystemObject")
+
+scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
+
+shell.ShellExecute _
+    scriptDir & "\mihomo-windows-amd64.exe", _
+    "-d .", _
+    scriptDir, _
+    "runas", _
+    0
