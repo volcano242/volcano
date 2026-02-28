@@ -1,0 +1,94 @@
+payload:
+
+  # OpenAI
+  - openaiapi-site.azureedge.net
+  - openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net
+  - openaicomproductionae4b.blob.core.windows.net
+  - production-openaicom-storage.azureedge.net
+  - +.chatgpt.com
+  - +.chat.com
+  - +.oaistatic.com
+  - +.oaiusercontent.com
+  - +.openai.com
+  - +.sora.com
+  - +.chatgpt.livekit.cloud
+  - +.host.livekit.cloud
+  - +.turn.livekit.cloud
+  - +.openai.com.cdn.cloudflare.net
+  - o33249.ingest.sentry.io
+  - openaicom.imgix.net
+  - browser-intake-datadoghq.com
+
+
+
+  # Google / Gemini / DeepMind / AI Studio / NotebookLM
+  - ai.google.dev
+  - alkalicore-pa.clients6.google.com
+  - alkalimakersuite-pa.clients6.google.com
+  - webchannel-alkalimakersuite-pa.clients6.google.com
+  - +.gemini.google
+  - +.deepmind.google
+  - +.opal.google
+  - +.labs.google
+  - +.jules.google
+  - +.deepmind.com
+  - +.generativeai.google
+  - +.notebooklm.google
+  - +.ai.studio
+  - +.robinfrontend-pa.googleapis.com
+  - +.bard.google.com
+  - +.aistudio.google.com
+  - +.gemini.google.com
+  - +.makersuite.google.com
+  - +.notebooklm.google.com
+  - +.proactivebackend-pa.googleapis.com
+  - +.jules.google.com
+  - +.generativelanguage.googleapis.com
+  - +.aisandbox-pa.googleapis.com
+  - +.aida.googleapis.com
+  - +.geller-pa.googleapis.com
+  - +.opal.google.com
+
+  # Anthropic / Claude
+  - +.anthropic.com
+  - +.claude.ai
+  - +.claude.com
+  - +.claudemcpclient.com
+  - +.claudeusercontent.com
+  - +.servd-anthropic-website.b-cdn.net
+
+  # xAI Grok
+  - +.grok.com
+  - +.x.ai
+  - +.grok.x.com
+
+  # Perplexity
+  - +.perplexity.ai
+  - +.perplexity.com
+  - +.pplx.ai
+  - +.pplx-res.cloudinary.com
+
+  # Cursor
+  - +.cursor.com
+  - +.cursor.sh
+  - +.cursorapi.com
+  - +.cursor-cdn.com
+
+
+
+  # HuggingFace
+  - +.hg.co
+  - +.hf.co
+  - +.hf.space
+  - +.huggingface.co
+
+
+  # AI API
+  - +.openrouter.ai
+  - +.diabrowser.com
+  - +.dola.com
+  - +.oystermercury.top
+
+  # POE
+  - +.poe.com
+  - +.poecdn.net
