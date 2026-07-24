@@ -1,0 +1,257 @@
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: silent
+ipv6: true
+unified-delay: true
+
+
+
+hosts:
+  dns.google: [8.8.8.8, 8.8.4.4]
+
+dns:
+  enable: true
+  ipv6: true
+  prefer-h3: false
+  use-hosts: true
+  use-system-hosts: true
+  respect-rules: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+    - 'rule-set:fakeip-filter'
+  default-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+    - system
+  direct-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+    - system
+  proxy-server-nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+  nameserver:
+    - https://dns.google/dns-query#ecs=221.220.50.0/24&ecs-override=true
+
+tun:
+  enable: false
+  stack: mixed
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: true
+  device: "TUN"
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+    
+
+proxy-providers:
+  Zeus:
+    type: http
+    url: "subscription_url"
+    interval: 3600
+    path: ./proxy_providers/Zeus.yaml
+    health-check:
+      enable: true
+      interval: 600
+      url: https://cp.cloudflare.com/generate_204
+      lazy: false
+    proxy: DIRECT
+    exclude-filter: "(?i)剩余|重置|套餐|流量|到期|有效期|官网|官址|网址|过期|Expire|Expiry|Traffic|Usage|Quota|Reset|Balance|Info|Website|Telegram|通知|公告|说明|教程"
+    header:
+      User-Agent:
+        - "Clash-Verge/v2.5.1"
+
+proxy-groups:
+  - name: Proxies
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/main/Icons/Google.png
+    type: select
+    proxies:
+      - JP
+      - TW
+      - HK
+      - US
+      - Other
+
+  - name: AI Service
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/main/Icons/ChatGPT.png
+    type: select
+    proxies:
+      - JP
+      - US
+      - TW
+
+
+  - name: Bilibili
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/main/Icons/Bilibili.png
+    type: select
+    proxies:
+      - DIRECT
+      - HK
+
+  - name: Final
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/main/Icons/Final.png
+    type: select
+    proxies:
+      - JP
+      - TW
+      - HK
+      - US
+      - Other
+      - DIRECT
+
+  - name: JP
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/main/Icons/JP.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)日本|JP|Japan|🇯🇵"   
+
+  - name: TW
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/main/Icons/CN.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)台|新北|彰化|TW|Taiwan"
+
+  - name: HK
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/main/Icons/HK.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)港|HK|Hong|Kong|🇭🇰"
+
+  - name: US
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/main/Icons/US.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)美|US|United States|🇺🇸"
+
+  - name: Other
+    icon: https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/main/Icons/Flclash.png
+    type: select
+    use:
+      - Zeus
+    filter: "(?i)^(?!.*(港|HK|Hong|Kong|🇭🇰|台|新北|彰化|TW|Taiwan|日本|JP|Japan|🇯🇵|美|US|United States|🇺🇸)).*"
+
+
+
+rule-providers:
+  banad:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs"
+    path: ./rule_providers/banad.mrs
+    interval: 3600
+  proxy:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/rules-output/mrs/proxy.mrs"
+    path: ./rule_providers/proxy.mrs
+    interval: 3600
+  direct-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/rules-output/mrs/direct.mrs"
+    path: ./rule_providers/direct-domain.mrs
+    interval: 3600
+  direct-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs"
+    path: ./rule_providers/direct-ip.mrs
+    interval: 3600
+  telegram-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs"
+    path: ./rule_providers/telegram-ip.mrs
+    interval: 3600
+  ai:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs"
+    path: ./rule_providers/ai.mrs
+    interval: 3600
+  bilibili-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo-lite/geoip/bilibili.mrs"
+    path: ./rule_providers/bilibili-ip.mrs
+    interval: 3600
+  bilibili-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bilibili.mrs"
+    path: ./rule_providers/bilibili-domain.mrs
+    interval: 3600
+  steam:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam.mrs"
+    path: ./rule_providers/steam.mrs
+    interval: 3600
+  steam@cn:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam@cn.mrs"
+    path: ./rule_providers/steam@cn.mrs
+    interval: 3600
+  private-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.mrs"
+    path: ./rule_providers/private-domain.mrs
+    interval: 3600
+  private-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.mrs"
+    path: ./rule_providers/private-ip.mrs
+    interval: 3600
+  fakeip-filter:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/rules-output/mrs/fakeip-filter.mrs"
+    path: ./rule_providers/fakeip-filter.mrs
+    interval: 3600
+  scholar:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://gh-proxy.org/https://raw.githubusercontent.com/volcano242/volcano/rules-output/mrs/scholar.mrs"
+    path: ./rule_providers/scholar.mrs
+    interval: 3600  
+rules:
+  - AND,((NETWORK,UDP),(DST-PORT,443)),REJECT
+  - RULE-SET,banad,REJECT
+  - RULE-SET,private-domain,DIRECT
+  - RULE-SET,private-ip,DIRECT,no-resolve
+  - RULE-SET,steam@cn, DIRECT
+  - RULE-SET,steam, Proxies
+  - RULE-SET,scholar,DIRECT 
+  - RULE-SET,bilibili-ip, Bilibili,no-resolve
+  - RULE-SET,bilibili-domain, Bilibili
+  - RULE-SET,ai, AI Service
+  - RULE-SET,telegram-ip, Proxies,no-resolve
+  - RULE-SET,proxy, Proxies
+  - RULE-SET,direct-domain,DIRECT
+  - RULE-SET,direct-ip,DIRECT
+  - MATCH, Final
