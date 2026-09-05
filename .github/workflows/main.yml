@@ -1,0 +1,551 @@
+name: Convert YAML to MRS, SRS, LIST and GEO
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4,16 * * *'
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  MIHOMO_VERSION: v1.19.20
+  SING_BOX_VERSION: 1.12.0
+  PYYAML_VERSION: 6.0.2
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download converters
+        shell: bash
+        run: |
+          set -euo pipefail
+          BIN_DIR="$RUNNER_TEMP/rule-converters"
+          mkdir -p "$BIN_DIR/sing-box-extract"
+          curl --fail --location --retry 3 --retry-all-errors --output "$BIN_DIR/mihomo.gz" "https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VERSION}/mihomo-linux-amd64-${MIHOMO_VERSION}.gz"
+          gzip -dc "$BIN_DIR/mihomo.gz" > "$BIN_DIR/mihomo"
+          chmod +x "$BIN_DIR/mihomo"
+          curl --fail --location --retry 3 --retry-all-errors --output "$BIN_DIR/sing-box.tar.gz" "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
+          tar -xzf "$BIN_DIR/sing-box.tar.gz" --strip-components=1 -C "$BIN_DIR/sing-box-extract"
+          mv "$BIN_DIR/sing-box-extract/sing-box" "$BIN_DIR/sing-box"
+          chmod +x "$BIN_DIR/sing-box"
+          "$BIN_DIR/mihomo" -v
+          "$BIN_DIR/sing-box" version
+
+      - name: Prepare builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          VENV_DIR="$RUNNER_TEMP/rules-venv"
+          python3 -m venv "$VENV_DIR"
+          "$VENV_DIR/bin/pip" install --disable-pip-version-check --quiet "PyYAML==${PYYAML_VERSION}"
+          cat > "$RUNNER_TEMP/rule_builder.py" <<'PY'
+          import argparse
+          import ipaddress
+          import json
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          import yaml
+
+          NAME_PATTERN = re.compile(r"^[A-Za-z0-9._@-]+$")
+
+          def load_entries(path):
+              data = json.loads(path.read_text(encoding="utf-8-sig"))
+              if not isinstance(data, list) or not data:
+                  raise ValueError("input.json must be a non-empty JSON array")
+              entries = []
+              names = set()
+              for index, item in enumerate(data, 1):
+                  if not isinstance(item, dict):
+                      raise ValueError(f"entry {index} must be an object")
+                  if set(item) != {"url", "name", "behavior"}:
+                      raise ValueError(f"entry {index} must contain only url, name and behavior")
+                  url = item["url"]
+                  name = item["name"]
+                  behavior = item["behavior"]
+                  if not all(isinstance(value, str) for value in (url, name, behavior)):
+                      raise ValueError(f"entry {index} fields must be strings")
+                  url = url.strip()
+                  name = name.strip()
+                  behavior = behavior.strip().lower()
+                  parsed = urlsplit(url)
+                  if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+                      raise ValueError(f"entry {index} has an invalid URL")
+                  if any(ord(char) < 32 or ord(char) == 127 for char in url):
+                      raise ValueError(f"entry {index} URL contains control characters")
+                  if not NAME_PATTERN.fullmatch(name):
+                      raise ValueError(f"entry {index} has an invalid name: {name}")
+                  if behavior not in {"domain", "ipcidr"}:
+                      raise ValueError(f"entry {index} behavior must be domain or ipcidr")
+                  if name in names:
+                      raise ValueError(f"duplicate output name: {name}")
+                  names.add(name)
+                  entries.append({"url": url, "name": name, "behavior": behavior})
+              return entries
+
+          def read_payload(path):
+              data = yaml.safe_load(path.read_text(encoding="utf-8-sig"))
+              if not isinstance(data, dict) or not isinstance(data.get("payload"), list):
+                  raise ValueError(f"{path.name} must contain a top-level payload list")
+              payload = []
+              for value in data["payload"]:
+                  if not isinstance(value, str):
+                      raise ValueError(f"{path.name} contains a non-string rule")
+                  value = value.strip()
+                  if value:
+                      payload.append(value)
+              if not payload:
+                  raise ValueError(f"{path.name} contains no rules")
+              return payload
+
+          def domain_to_sing_box(pattern):
+              pattern = pattern.strip().rstrip(".")
+              if not pattern:
+                  raise ValueError("empty domain rule")
+              if pattern.startswith("+."):
+                  suffix = pattern[2:]
+                  if not suffix or "*" in suffix or "+" in suffix:
+                      raise ValueError(f"unsupported domain rule: {pattern}")
+                  return "domain_suffix", suffix
+              if pattern.startswith("."):
+                  suffix = pattern[1:]
+                  if not suffix or "*" in suffix or "+" in suffix:
+                      raise ValueError(f"unsupported domain rule: {pattern}")
+                  return "domain_regex", rf"^(?:[^.]+\.)+{re.escape(suffix)}$"
+              if "*" in pattern:
+                  if "+" in pattern:
+                      raise ValueError(f"unsupported domain rule: {pattern}")
+                  labels = pattern.split(".")
+                  regex_labels = []
+                  for label in labels:
+                      if label == "*":
+                          regex_labels.append(r"[^.]+")
+                      elif "*" in label:
+                          regex_labels.append(re.escape(label).replace(r"\*", r"[^.]*"))
+                      else:
+                          regex_labels.append(re.escape(label))
+                  return "domain_regex", "^" + r"\.".join(regex_labels) + "$"
+              if "+" in pattern:
+                  raise ValueError(f"unsupported domain rule: {pattern}")
+              return "domain", pattern
+
+          def domain_to_list(pattern):
+              pattern = pattern.strip().rstrip(".")
+              if not pattern or "," in pattern:
+                  raise ValueError(f"invalid domain rule: {pattern}")
+              if pattern.startswith("+."):
+                  suffix = pattern[2:]
+                  if not suffix or "*" in suffix or "+" in suffix:
+                      raise ValueError(f"unsupported domain rule: {pattern}")
+                  return f"DOMAIN-SUFFIX,{suffix}"
+              if pattern.startswith("."):
+                  suffix = pattern[1:]
+                  if not suffix or "*" in suffix or "+" in suffix:
+                      raise ValueError(f"unsupported domain rule: {pattern}")
+                  return f"DOMAIN-WILDCARD,*.{suffix}"
+              if "*" in pattern:
+                  if "+" in pattern:
+                      raise ValueError(f"unsupported domain rule: {pattern}")
+                  return f"DOMAIN-WILDCARD,{pattern}"
+              if "+" in pattern:
+                  raise ValueError(f"unsupported domain rule: {pattern}")
+              return f"DOMAIN,{pattern}"
+
+          def create_outputs(payload, behavior, source_path, list_path):
+              if behavior == "domain":
+                  groups = {"domain": [], "domain_suffix": [], "domain_regex": []}
+                  list_rules = []
+                  for rule in payload:
+                      field, value = domain_to_sing_box(rule)
+                      groups[field].append(value)
+                      list_rules.append(domain_to_list(rule))
+                  rules = []
+                  for field in ("domain", "domain_suffix", "domain_regex"):
+                      values = list(dict.fromkeys(groups[field]))
+                      if values:
+                          rules.append({field: values})
+              else:
+                  cidrs = []
+                  list_rules = []
+                  for rule in payload:
+                      network = ipaddress.ip_network(rule, strict=False)
+                      cidr = str(network)
+                      cidrs.append(cidr)
+                      rule_type = "IP-CIDR" if network.version == 4 else "IP-CIDR6"
+                      list_rules.append(f"{rule_type},{cidr},no-resolve")
+                  rules = [{"ip_cidr": list(dict.fromkeys(cidrs))}]
+              source_path.write_text(
+                  json.dumps(
+                      {"version": 3, "rules": rules},
+                      ensure_ascii=False,
+                      indent=2
+                  ) + "\n",
+                  encoding="utf-8"
+              )
+              list_path.write_text(
+                  "\n".join(dict.fromkeys(list_rules)) + "\n",
+                  encoding="utf-8"
+              )
+
+          def run(command):
+              subprocess.run(command, check=True)
+
+          def build(config_path, mihomo, sing_box, output_root, source_root):
+              entries = load_entries(config_path)
+              for directory in ("yaml", "mrs", "srs", "list"):
+                  path = output_root / directory
+                  if path.exists():
+                      for child in path.iterdir():
+                          if child.is_file() or child.is_symlink():
+                              child.unlink()
+                  else:
+                      path.mkdir(parents=True)
+              source_root.mkdir(parents=True, exist_ok=True)
+              for child in source_root.iterdir():
+                  if child.is_file() or child.is_symlink():
+                      child.unlink()
+              for entry in entries:
+                  url = entry["url"]
+                  name = entry["name"]
+                  behavior = entry["behavior"]
+                  yaml_path = output_root / "yaml" / f"{name}.yaml"
+                  mrs_path = output_root / "mrs" / f"{name}.mrs"
+                  srs_path = output_root / "srs" / f"{name}.srs"
+                  list_path = output_root / "list" / f"{name}.list"
+                  source_path = source_root / f"{name}.json"
+                  print(f"Downloading: {url} -> {name} ({behavior})", flush=True)
+                  run([
+                      "curl",
+                      "--fail",
+                      "--location",
+                      "--retry",
+                      "3",
+                      "--retry-all-errors",
+                      "--connect-timeout",
+                      "20",
+                      "--output",
+                      str(yaml_path),
+                      url
+                  ])
+                  payload = read_payload(yaml_path)
+                  run([
+                      str(mihomo),
+                      "convert-ruleset",
+                      behavior,
+                      "yaml",
+                      str(yaml_path),
+                      str(mrs_path)
+                  ])
+                  create_outputs(payload, behavior, source_path, list_path)
+                  run([
+                      str(sing_box),
+                      "rule-set",
+                      "compile",
+                      "--output",
+                      str(srs_path),
+                      str(source_path)
+                  ])
+                  for path in (yaml_path, mrs_path, srs_path, list_path):
+                      if not path.is_file() or path.stat().st_size == 0:
+                          raise ValueError(f"empty output: {path}")
+              print(f"Converted {len(entries)} rule files.")
+
+          def main():
+              parser = argparse.ArgumentParser()
+              parser.add_argument("config", type=Path)
+              parser.add_argument("mihomo", type=Path)
+              parser.add_argument("sing_box", type=Path)
+              parser.add_argument("output_root", type=Path)
+              parser.add_argument("source_root", type=Path)
+              args = parser.parse_args()
+              build(
+                  args.config,
+                  args.mihomo,
+                  args.sing_box,
+                  args.output_root,
+                  args.source_root
+              )
+
+          if __name__ == "__main__":
+              try:
+                  main()
+              except Exception as error:
+                  print(f"ERROR: {error}", file=sys.stderr)
+                  raise SystemExit(1)
+          PY
+
+      - name: Download and convert rules
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f input.json
+          "$RUNNER_TEMP/rules-venv/bin/python" "$RUNNER_TEMP/rule_builder.py" input.json "$RUNNER_TEMP/rule-converters/mihomo" "$RUNNER_TEMP/rule-converters/sing-box" "$GITHUB_WORKSPACE" "$RUNNER_TEMP/sing-box-source"
+          find yaml mrs srs list -maxdepth 1 -type f -printf '%p\n' | sort
+
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Build Geo files
+        shell: bash
+        run: |
+          set -euo pipefail
+          GEO_WORK="$RUNNER_TEMP/geo-build"
+          GEOSITE_DATA="$GEO_WORK/geosite-data"
+          GEOSITE_OUTPUT="$GEO_WORK/geosite-output"
+          GEOIP_INPUT="$GEO_WORK/geoip-input"
+          DOMAIN_BUILDER="$GEO_WORK/domain-list-custom"
+          GEOIP_BUILDER="$GEO_WORK/geoip"
+          GEOIP_CONFIG="$GEO_WORK/geoip-config.json"
+          rm -rf "$GEO_WORK" "$GITHUB_WORKSPACE/geo"
+          mkdir -p "$GEOSITE_DATA" "$GEOSITE_OUTPUT" "$GEOIP_INPUT" "$GITHUB_WORKSPACE/geo"
+          cat > "$RUNNER_TEMP/geo_builder.py" <<'PY'
+          import argparse
+          import ipaddress
+          import json
+          import sys
+          from pathlib import Path
+          import yaml
+
+          REGEX_SPECIALS = frozenset("\\.^$|?*+()[]{}")
+
+          def read_payload(path):
+              data = yaml.safe_load(path.read_text(encoding="utf-8-sig"))
+              if not isinstance(data, dict) or not isinstance(data.get("payload"), list):
+                  raise ValueError(f"{path.name} must contain a top-level payload list")
+              payload = []
+              for value in data["payload"]:
+                  if not isinstance(value, str):
+                      raise ValueError(f"{path.name} contains a non-string rule")
+                  value = value.strip()
+                  if value:
+                      payload.append(value)
+              if not payload:
+                  raise ValueError(f"{path.name} contains no rules")
+              return payload
+
+          def escape_go_regex(value):
+              return "".join(
+                  "\\" + char if char in REGEX_SPECIALS else char
+                  for char in value
+              )
+
+          def domain_to_geosite(pattern):
+              pattern = pattern.strip().rstrip(".")
+              if not pattern:
+                  raise ValueError("empty domain rule")
+              if pattern.startswith("+."):
+                  suffix = pattern[2:]
+                  if not suffix or "*" in suffix or "+" in suffix:
+                      raise ValueError(f"unsupported domain rule: {pattern}")
+                  return f"domain:{suffix}"
+              if pattern.startswith("."):
+                  suffix = pattern[1:]
+                  if not suffix or "*" in suffix or "+" in suffix:
+                      raise ValueError(f"unsupported domain rule: {pattern}")
+                  return f"regexp:^(?:[^.]+\\.)+{escape_go_regex(suffix)}$"
+              if "*" in pattern:
+                  if "+" in pattern:
+                      raise ValueError(f"unsupported domain rule: {pattern}")
+                  labels = pattern.split(".")
+                  regex_labels = []
+                  for label in labels:
+                      if label == "*":
+                          regex_labels.append("[^.]+")
+                      elif "*" in label:
+                          regex_labels.append(
+                              escape_go_regex(label).replace("\\*", "[^.]*")
+                          )
+                      else:
+                          regex_labels.append(escape_go_regex(label))
+                  return "regexp:^" + "\\.".join(regex_labels) + "$"
+              if "+" in pattern:
+                  raise ValueError(f"unsupported domain rule: {pattern}")
+              return f"full:{pattern}"
+
+          def build(
+              config_path,
+              yaml_dir,
+              geosite_dir,
+              geoip_dir,
+              geoip_config,
+              geo_output
+          ):
+              entries = json.loads(
+                  config_path.read_text(encoding="utf-8-sig")
+              )
+              domain_count = 0
+              ip_count = 0
+              geoip_inputs = []
+              for index, entry in enumerate(entries, 1):
+                  name = entry["name"].strip()
+                  behavior = entry["behavior"].strip().lower()
+                  payload = read_payload(yaml_dir / f"{name}.yaml")
+                  if behavior == "domain":
+                      rules = list(
+                          dict.fromkeys(
+                              domain_to_geosite(rule)
+                              for rule in payload
+                          )
+                      )
+                      (geosite_dir / name).write_text(
+                          "\n".join(rules) + "\n",
+                          encoding="utf-8"
+                      )
+                      domain_count += 1
+                  elif behavior == "ipcidr":
+                      cidrs = []
+                      for rule in payload:
+                          cidrs.append(
+                              str(
+                                  ipaddress.ip_network(
+                                      rule,
+                                      strict=False
+                                  )
+                              )
+                          )
+                      source_path = geoip_dir / f"{index:04d}.txt"
+                      source_path.write_text(
+                          "\n".join(dict.fromkeys(cidrs)) + "\n",
+                          encoding="utf-8"
+                      )
+                      geoip_inputs.append({
+                          "type": "text",
+                          "action": "add",
+                          "args": {
+                              "name": name,
+                              "uri": str(source_path.resolve())
+                          }
+                      })
+                      ip_count += 1
+                  else:
+                      raise ValueError(
+                          f"unsupported behavior: {behavior}"
+                      )
+              if domain_count == 0:
+                  raise ValueError(
+                      "no domain rulesets available for geosite.dat"
+                  )
+              if ip_count == 0:
+                  raise ValueError(
+                      "no ipcidr rulesets available for geoip.dat"
+                  )
+              config = {
+                  "input": geoip_inputs,
+                  "output": [
+                      {
+                          "type": "v2rayGeoIPDat",
+                          "action": "output",
+                          "args": {
+                              "outputDir": str(
+                                  geo_output.resolve()
+                              ),
+                              "outputName": "tinygeoip.dat"
+                          }
+                      }
+                  ]
+              }
+              geoip_config.write_text(
+                  json.dumps(
+                      config,
+                      ensure_ascii=False,
+                      indent=2
+                  ) + "\n",
+                  encoding="utf-8"
+              )
+              print(
+                  f"Prepared {domain_count} geosite lists and "
+                  f"{ip_count} geoip lists."
+              )
+
+          def main():
+              parser = argparse.ArgumentParser()
+              parser.add_argument("config", type=Path)
+              parser.add_argument("yaml_dir", type=Path)
+              parser.add_argument("geosite_dir", type=Path)
+              parser.add_argument("geoip_dir", type=Path)
+              parser.add_argument("geoip_config", type=Path)
+              parser.add_argument("geo_output", type=Path)
+              args = parser.parse_args()
+              build(
+                  args.config,
+                  args.yaml_dir,
+                  args.geosite_dir,
+                  args.geoip_dir,
+                  args.geoip_config,
+                  args.geo_output
+              )
+
+          if __name__ == "__main__":
+              try:
+                  main()
+              except Exception as error:
+                  print(f"ERROR: {error}", file=sys.stderr)
+                  raise SystemExit(1)
+          PY
+          "$RUNNER_TEMP/rules-venv/bin/python" "$RUNNER_TEMP/geo_builder.py" input.json "$GITHUB_WORKSPACE/yaml" "$GEOSITE_DATA" "$GEOIP_INPUT" "$GEOIP_CONFIG" "$GITHUB_WORKSPACE/geo"
+          git clone --depth 1 https://github.com/Loyalsoldier/domain-list-custom.git "$DOMAIN_BUILDER"
+          git clone --depth 1 https://github.com/Loyalsoldier/geoip.git "$GEOIP_BUILDER"
+          (
+            cd "$DOMAIN_BUILDER"
+            go run ./ --datapath="$GEOSITE_DATA" --outputpath="$GEOSITE_OUTPUT" --exportlists= --excludeattrs= --togfwlist=
+          )
+          install -m 0644 "$GEOSITE_OUTPUT/geosite.dat" "$GITHUB_WORKSPACE/geo/tinygeosite.dat"
+          (
+            cd "$GEOIP_BUILDER"
+            go run ./ convert -c "$GEOIP_CONFIG"
+          )
+          test -s "$GITHUB_WORKSPACE/geo/tinygeosite.dat"
+          test -s "$GITHUB_WORKSPACE/geo/tinygeoip.dat"
+          find geo -maxdepth 1 -type f -printf '%p\n' | sort
+
+      - name: Force push outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config core.autocrlf false
+          OUTPUT_BACKUP="$RUNNER_TEMP/rules-output"
+          rm -rf "$OUTPUT_BACKUP"
+          mkdir -p "$OUTPUT_BACKUP"
+          cp -a yaml mrs srs list geo "$OUTPUT_BACKUP/"
+          git checkout --orphan rules-output-temp
+          git rm -rf . >/dev/null 2>&1 || true
+          git clean -fdx
+          cp -a "$OUTPUT_BACKUP/yaml" .
+          cp -a "$OUTPUT_BACKUP/mrs" .
+          cp -a "$OUTPUT_BACKUP/srs" .
+          cp -a "$OUTPUT_BACKUP/list" .
+          cp -a "$OUTPUT_BACKUP/geo" .
+          git add -A
+          timestamp="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          git commit -m "Scheduled rules update ($timestamp)"
+          git branch -M rules-output
+          git push --force origin rules-output
+
+      - name: Delete old workflow runs
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs?per_page=100" --jq '.workflow_runs[].id' |
+          while IFS= read -r run_id; do
+            [[ -z "$run_id" || "$run_id" == "$GITHUB_RUN_ID" ]] && continue
+            gh api --method DELETE "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" || true
+          done
