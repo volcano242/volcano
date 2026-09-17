@@ -1,0 +1,13 @@
+payload:
+  - +.edu.cn
+  - +.home.arpa
+  - +.lan
+  - +.local
+  - +.localhost
+  - +.msftconnecttest.com
+  - +.msftncsi.com
+  - ipv4only.arpa
+  - localhost.ptlogin2.qq.com
+  - localhost.sec.qq.com
+  - localhost.weixin.qq.com
+  - localhost.work.weixin.qq.com
