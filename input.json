@@ -1,0 +1,87 @@
+[
+  {
+    "url": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt",
+    "name": "google",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/ntp.yaml",
+    "name": "ntp",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/scholar.yaml",
+    "name": "scholar",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/direct.yaml",
+    "name": "direct-domain",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/fakeip-filter.yaml",
+    "name": "fakeip-filter",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/proxy.yaml",
+    "name": "proxy",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/volcano242/volcano/refs/heads/main/rules/banad.yaml",
+    "name": "banad",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.yaml",
+    "name": "direct-ip",
+    "behavior": "ipcidr"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.yaml",
+    "name": "telegram-ip",
+    "behavior": "ipcidr"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.yaml",
+    "name": "ai",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam.yaml",
+    "name": "steam",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam@cn.yaml",
+    "name": "steam@cn",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.yaml",
+    "name": "private-domain",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.yaml",
+    "name": "private-ip",
+    "behavior": "ipcidr"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-cryptocurrency.yaml",
+    "name": "cryptocurrency",
+    "behavior": "domain"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo-lite/geoip/bilibili.yaml",
+    "name": "bilibili-ip",
+    "behavior": "ipcidr"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bilibili.yaml",
+    "name": "bilibili-domain",
+    "behavior": "domain"
+  }
+]
