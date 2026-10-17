@@ -1,0 +1,12 @@
+payload:
+- +.browserleaks.com
+- +.google.com
+- +.facebook.com
+- +.dns.google
+- +.cloudflare-dns.com
+- +.quad9.net
+- dns.adguard-dns.com
+- family.adguard-dns.com
+- unfiltered.adguard-dns.com
+- dns.adguard.com
+- +.duangks.com
