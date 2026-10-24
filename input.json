@@ -1,0 +1,98 @@
+[
+  {
+    "name": "banad",
+    "behavior": "domain",
+    "url_add": [
+      "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/falungong.yaml",
+      "https://raw.githubusercontent.com/volcano242/volcano/main/rules/banad_add.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-stun.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-httpdns-cn.yaml"
+    ],
+    "url_delete": [
+      "https://raw.githubusercontent.com/volcano242/volcano/main/rules/banad_delete.yaml"
+    ]
+  },
+  {
+    "name": "direct-domain-vip",
+    "behavior": "domain",
+    "url_add": [
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/connectivity-check.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ntp.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam@cn.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/win-update.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/test-ipv6.yaml",
+      "https://raw.githubusercontent.com/volcano242/volcano/main/rules/scholar.yaml",
+      "https://raw.githubusercontent.com/volcano242/volcano/main/rules/direct_add.yaml"
+    ],
+    "url_delete": [
+      "https://raw.githubusercontent.com/volcano242/volcano/main/rules/direct_delete.yaml"
+    ] 
+  },  
+  {
+    "name": "proxy-domain",
+    "behavior": "domain",
+    "url_add": [
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-porn.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bing.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-doh.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-media.yaml",
+      "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/google.txt",
+      "https://raw.githubusercontent.com/SukkaW/Surge/master/Source/non_ip/global.conf",
+      "https://raw.githubusercontent.com/volcano242/volcano/main/rules/proxy_add.yaml"
+    ],
+    "url_delete": [
+      "https://raw.githubusercontent.com/volcano242/volcano/main/rules/proxy_delete.yaml"
+    ]
+  },
+  {
+    "name": "direct-domain",
+    "behavior": "domain",
+    "url_add": [
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.yaml"
+    ],
+    "url_delete": [
+      "https://raw.githubusercontent.com/volcano242/volcano/main/rules/direct_delete.yaml"
+    ]    
+  },
+  {
+    "name": "fakeip-filter",
+    "behavior": "domain",
+    "url_add": [
+      "https://raw.githubusercontent.com/volcano242/volcano/main/rules/fakeip-filter.yaml"
+    ],
+    "url_delete": []
+  },
+  {
+    "name": "direct-ip",
+    "behavior": "ipcidr",
+    "url_add": [
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.yaml",
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.yaml"
+    ],
+    "url_delete": []
+  },
+  {
+    "name": "proxy-ip",
+    "behavior": "ipcidr",
+    "url_add": [
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.yaml",
+      "https://raw.githubusercontent.com/volcano242/volcano/main/rules/global-dns-ip.yaml"
+    ],
+    "url_delete": []
+  },
+  {
+    "name": "ai",
+    "behavior": "domain",
+    "url_add": [
+      "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.yaml"
+    ],
+    "url_delete": []
+  }
+]
